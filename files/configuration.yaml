@@ -1,0 +1,52 @@
+---
+neb_username: guest@nebulon.com
+neb_password: Nebulon123!
+servers:
+  - mac: B0:26:28:C9:16:10
+    ip: 10.100.25.46
+    name: server-09
+    fqdn: server-09.tme.nebulon.com
+    serial: J100MY0A
+    group: lenovo
+  - mac: B0:26:28:C9:1A:80
+    ip: 10.100.25.49
+    name: server-10
+    fqdn: server-10.tme.nebulon.com
+    serial: J100KY4V
+    group: lenovo
+  - mac: B0:26:28:C9:1B:F0
+    ip: 10.100.25.52
+    name: server-11
+    fqdn: server-11.tme.nebulon.com
+    serial: J100KY4R
+    group: lenovo
+  - mac: B0:26:28:C9:16:60
+    ip: 10.100.25.55
+    name: server-12
+    fqdn: server-12.tme.nebulon.com
+    serial: J100KY4T
+    group: lenovo
+  - mac: F4:03:43:BC:B3:00
+    ip: 10.100.25.34
+    name: server-05
+    fqdn: server-05.tme.nebulon.com
+    serial: 2M200701S7
+    group: hpe
+  - mac: F4:03:43:D4:AE:C0
+    ip: 10.100.25.37
+    name: server-06
+    fqdn: server-06.tme.nebulon.com
+    serial: 2M204008K6
+    group: hpe
+  - mac: B8:83:03:6D:DF:58
+    ip: 10.100.25.40
+    name: server-07
+    fqdn: server-07.tme.nebulon.com
+    serial: 2M294204JQ
+    group: hpe
+  - mac: F4:03:43:D0:45:60
+    ip: 10.100.25.43
+    name: server-08
+    fqdn: server-08.tme.nebulon.com
+    serial: 2M211203XX
+    group: hpe

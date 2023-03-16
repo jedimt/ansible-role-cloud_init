@@ -1,0 +1,3 @@
+platform: nebulon
+machine: x86_64
+cloud_name: nebulon

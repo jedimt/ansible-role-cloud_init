@@ -1,0 +1,10 @@
+#cloud-config
+hostname: localhost
+preserve_hostname: true
+manage_etc_hosts: true
+
+# Creates script at /var/lib/cloud/instance/scripts/runcmd and executes it
+runcmd:
+  - /usr/bin/python3 /etc/cloud/nebulon/scripts/set_network.py
+  - /usr/bin/python3 /etc/cloud/nebulon/scripts/set_hostname.py
+  - [ bash, /root/grow_ubuntu_root.sh ]

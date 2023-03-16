@@ -1,0 +1,165 @@
+---
+# tasks file for ansible-role-cloud-init
+# Install some packages required
+- name: Install prerequisite packages
+  block:
+    - name: Remove CDROM apt source if it exists
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list
+        search_string: 'deb [check-date=no] file:///cdrom focal main restricted'
+        line: "# Removed CDROM source"
+    - name: Update apt and install packages
+      ansible.builtin.apt:
+        name:
+          - cloud-init
+          - vim
+          - nfs-common
+          - sg3-utils
+          - lsscsi
+          - ca-certificates
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+- name: Set NoCloud seed information in /etc/cloud/cloud.cfg
+  ansible.builtin.blockinfile:
+    path: /etc/cloud/cloud.cfg
+    block: |
+      datasource:
+        NoCloud:
+          seedfrom: {{ user_data_path }}
+    insertafter: "preserve_hostname: false"
+  tags:
+    - blockinfile
+    - facts
+
+- name: Modify cloud.cfg -> disable_root to false
+  ansible.builtin.replace:
+    path: /etc/cloud/cloud.cfg
+    regexp: 'disable_root: true'
+    replace: 'disable_root: false'
+
+- name: Modify cloud.cfg -> set preserve_hostname to true
+  ansible.builtin.replace:
+    path: /etc/cloud/cloud.cfg
+    regexp: 'preserve_hostname: false'
+    replace: 'preserve_hostname: true'
+
+- name: Create file /etc/cloud/cloud.cfg.d/99-installer.cfg
+  ansible.builtin.blockinfile:
+    path: /etc/cloud/cloud.cfg.d/99-installer.cfg
+    block: |
+      datasource:
+        None:
+          metadata: nebulon
+      datasource_list: [NoCloud]
+    mode: '0644'
+    create: true
+
+# Enable root login and restart SSH
+- name: Enable Root Login
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: "PermitRootLogin yes"
+    state: present
+    backup: true
+  notify:
+    - restart ssh
+
+# Set the root user password from ansible-vault
+- name: Set root user password
+  ansible.builtin.user:
+    name: root
+    update_password: always
+    password: "{{ ssh_password | password_hash('sha512') }}"
+  tags: [set_password]
+
+- name: Add Authorized keys from ansible-vault
+  ansible.posix.authorized_key:
+    user: root
+    state: present
+    key: "{{ item }}"
+  with_items:
+    - "{{ vault_pubkeys }}"
+  no_log: true
+  tags: ssh
+
+# Find existing netplan files
+- name: Find existing NetPlan files
+  ansible.builtin.find:
+    paths: /etc/netplan/
+    patterns:
+      - "*.yaml"
+      - "*.yml"
+  register: find_results
+  tags: netplan
+
+# Remove existing netplan config files
+- name: Remove existing NetPlan files
+  ansible.builtin.file:
+    path: "{{ item['path'] }}"
+    state: absent
+  with_items: "{{ find_results['files'] }}"
+  loop_control:
+    label: "{{ item.path }}"
+  tags: netplan
+
+- name: Copy utility scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/root/{{ item }}"
+    mode: '0755'
+  with_items:
+    - grow_ubuntu_root.sh
+  tags: copy_scripts
+
+# Copy the user-data file
+- name: Copy user-data file
+  ansible.builtin.copy:
+    src: files/user-data
+    dest: /etc/cloud/nebulon/
+    mode: '0755'
+  tags: copy_config
+
+# Copy the meta-data file
+- name: Copy meta-data file
+  ansible.builtin.copy:
+    src: files/meta-data
+    dest: /etc/cloud/nebulon/
+    mode: '0755'
+  tags: copy_config
+
+- name: Make directory for Nebulon customization scripts
+  ansible.builtin.file:
+    path: /etc/cloud/nebulon/scripts
+    state: directory
+    mode: '0755'
+  tags: copy_scripts
+
+- name: Copy configuration scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/cloud/nebulon/scripts/{{ item }}"
+    mode: '0755'
+  with_items:
+    - set_hostname.py
+    - set_network.py
+  tags: copy_config
+
+- name: Copy configuration.yaml file for network setup script
+  ansible.builtin.copy:
+    src: files/configuration.yaml
+    dest: /etc/cloud/nebulon/scripts/configuration.yaml
+    mode: '0755'
+  tags: copy_config
+
+- name: Clear out apt cache
+  ansible.builtin.apt:
+    autoclean: true
+    autoremove: true
+
+- name: Prime cloud-init to run on next boot
+  ansible.builtin.command:
+    cloud-init clean --logs
+  changed_when: true
