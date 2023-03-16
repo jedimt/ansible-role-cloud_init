@@ -1,0 +1,20 @@
+galaxy_info:
+  author: jedimt
+  role_name: cloud_init
+  description: Prepare hosts for Cloud Init
+
+  license: MIT
+
+  min_ansible_version: "5"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - xenial
+        - jammy
+
+  galaxy_tags:
+    - cloudinit
+
+dependencies: []
