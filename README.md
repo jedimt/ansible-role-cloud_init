@@ -2,6 +2,7 @@ Ansible Role: Cloud-Init
 =========
 
 Prepares an Ubuntu host for Cloud Init.
+Private repo, not pushed to Galaxy.
 
 Requirements
 ------------
