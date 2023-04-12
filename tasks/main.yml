@@ -148,8 +148,8 @@
   tags: copy_config
 
 - name: Copy configuration.yaml file for network setup script
-  ansible.builtin.copy:
-    src: files/configuration.yaml
+  ansible.builtin.template:
+    src: configuration.j2
     dest: /etc/cloud/nebulon/scripts/configuration.yaml
     mode: '0755'
   tags: copy_config

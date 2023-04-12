@@ -52,7 +52,7 @@ Example Playbook
         - "../../credentials.yml"
 
       roles:
-        - { role: ansible-role-cloud-init,
+        - { role: jedimt.cloud_init,
             ansible_password: "{{ vault_ansible_password }}"
         }
 
