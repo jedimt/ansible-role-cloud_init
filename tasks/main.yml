@@ -45,16 +45,17 @@
     regexp: 'preserve_hostname: false'
     replace: 'preserve_hostname: true'
 
-- name: Create file /etc/cloud/cloud.cfg.d/99-installer.cfg
+- name: Create 99-installer.cfg file
+  ansible.builtin.file:
+    path: '/etc/cloud/cloud.cfg.d/99-installer.cfg'
+    state: touch
+    mode: '0644'
+
+- name: Populate file /etc/cloud/cloud.cfg.d/99-installer.cfg
   ansible.builtin.blockinfile:
     path: /etc/cloud/cloud.cfg.d/99-installer.cfg
     block: |
-      datasource:
-        None:
-          metadata: nebulon
-      datasource_list: [NoCloud]
-    mode: '0644'
-    create: true
+      datasource_list: [ NoCloud, None ]
 
 # Enable root login and restart SSH
 - name: Enable Root Login
